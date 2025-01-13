@@ -2,6 +2,18 @@ from Player import player
 
 class state :
 
+
+    # end = [['G','G','G','G','G'],['B','B','B','B','B'],['Y','Y','Y','Y','Y'],['R','R','R','R','R']]
+    # colorMap = {
+    #         'R' : 3,
+    #         'Y' : 2,
+    #         'B' : 1,
+    #         'G' : 0
+    #     }
+
+    # safe place is in index  8+i*13  where i is [0,1,2,3]
+    safe = [8,21,34,47]
+
     def __init__(self,players,playerTurn,parent=None,action=None,cost=0,depth=0):
 
         #player is a list of objects (player).
@@ -12,6 +24,7 @@ class state :
         self.action = action
         self.depth = depth
         self.cost = cost
+        self.grid = [' _ ' for i in range(52)] 
 
     '''
     cost:
@@ -30,14 +43,99 @@ class state :
         return states
 
     def apply_move(self,piece,number):
-        return state
+        
+        for player in self.players:
+            if player.color == piece.color:
+                currentPlayer = player
+                break 
 
-    def can_move(self,piece,number):
+        if not self.can_move(currentPlayer,piece,number):
+            return state
+
+        # if the piece is out of the board, Enter it 
+        newIndex = 0
+        # if the piece is already in the board, move it
+        if piece.index != -1:
+            newIndex = piece.index + number
+
+        piece.index = newIndex
+
+        # if it reach to the end, Change the endpoint for this player
+        if newIndex == currentPlayer.endPoint:
+            currentPlayer.change_endpoint()
+            return self
+        # there are opponents here, remove them
+        self.remove_opponent(piece,currentPlayer)
+
+        return self
+
+    def can_move(self,player,piece,number):
+
+        #move piece from start point
+        if piece.index == -1 :
+            return number == 6
+
+        #check if the piece will reach the end point or not
+        if piece.index+number > 50:
+            return piece.index+number == player.endPoint
+
+        #check if there is a wall 
+        for step in range(number):
+            if self.there_are_wall((player.get_index(piece)+step)%52,piece.color) :
+                return False
+
         return True
 
     def is_final(self):
-        return True
+        for player in self.players:
+            if(self.is_win(player)):
+                print(f'player with color {player.color} win')
+                return True
+        return False
     
     def is_win(self,player):
-        #return if this player win or not
-        return True
+        return player.endPoint <= 51
+
+    # def print(self):
+        
+        # for i in range(5):
+        #     for j in range(4):
+        #         print(f"                                  {str(self.end[j][i])}    ",end='')
+        #     print()
+
+        # grid = [' _ ' for i in range(52)]
+
+        # for player in self.players:
+        #     for piece in player.pieces:
+        #         if piece.index >= 0 and piece.index < player.endPoint:
+        #             grid[(piece.index-player.shift)%52] = ' '+piece.color+str(piece.number)
+
+        # for i in range(52):
+        #     print(grid[i],end='')
+        # print()
+    
+    def there_are_wall(self,index,color):
+        # count number of pieces that not same as my color in this index
+        for player in self.players:
+            if player.color == color:
+                continue
+            count = 0
+            for piece in player.pieces:
+                count += (index == player.get_index(piece))
+            # if the count > 1 then there are a wall
+            if count>1:
+                return True
+        return False
+
+    def remove_opponent(self,piece,player):
+        #if safe point do not do anythings
+        if player.get_index(piece) in self.safe:
+            return
+
+        for opponent in self.players:
+            if player == opponent:
+                continue
+            for opponent_piece in opponent.pieces:
+                if player.get_index(piece) == opponent.get_index(opponent_piece):
+                    opponent_piece.index=-1
+             

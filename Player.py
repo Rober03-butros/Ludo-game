@@ -14,3 +14,11 @@ class player :
         self.shift = 13*colorMap[color]
         self.color = color
         self.endPoint = 55
+
+    def change_endpoint(self):
+        self.endPoint-=1
+
+    def get_index(self,piece):
+        if piece.index == -1 or piece.index > 51:
+            return piece.index
+        return (piece.index+self.shift)%52
