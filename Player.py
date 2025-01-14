@@ -2,7 +2,7 @@ from Piece import piece
 
 class player :
     
-    def __init__(self,color):
+    def __init__(self,color,isHuman):
         colorMap = {
             'R' : 0,
             'Y' : 1,
@@ -14,6 +14,7 @@ class player :
         self.shift = 13*colorMap[color]
         self.color = color
         self.endPoint = 55
+        self.ishuman = isHuman
 
     def change_endpoint(self):
         self.endPoint-=1

@@ -4,8 +4,8 @@ from Player import player
 import random 
 
 
-p1 = player('R')
-p2 = player('G')
+p1 = player('R',True)
+p2 = player('G',True)
 
 
 players = [p1,p2]
