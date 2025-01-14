@@ -64,3 +64,56 @@ class logic:
 
     def Expectiminimax(self):
         print('Expectiminimax')
+
+
+# expectiminimax frame test
+class Expectiminimax:
+    def __init__(self, state):
+        self.state = state
+
+    def expectiminimax(self, depth, player):
+        if depth == 0 or self.state.is_terminal():
+            return self.state.get_utility()
+
+        if player == 'max':
+            value = float('-inf')
+            for action in self.state.get_possible_actions():
+                new_state = self.state.apply_action(action)
+                value = max(value, self.expectiminimax(depth - 1, 'chance'))
+            return value
+        elif player == 'chance':
+            value = 0
+            actions = self.state.get_possible_actions()
+            for action in actions:
+                new_state = self.state.apply_action(action)
+                value += self.calculate_probability(action) * self.expectiminimax(depth - 1, 'min')
+            return value
+        else:  # player == 'min'
+            value = float('inf')
+            for action in self.state.get_possible_actions():
+                new_state = self.state.apply_action(action)
+                value = min(value, self.expectiminimax(depth - 1, 'max'))
+            return value
+
+    def calculate_probability(self, action):
+        # Calculate the probability of the chance node based on the action
+        # Customize this method based on the specific probabilities in your game
+        if action == "1 to 5":
+            return 1/6
+        elif action == "6 and then 1 to 5":
+            return 1/6 * 1/5
+        elif action == "two consecutive 6s and then 1 to 6":
+            return 1/6 * 1/6 * 1/6
+        else:
+            return 0  # Default case for unknown action
+
+    def get_best_action(self, depth):
+        best_value = float('-inf')
+        best_action = None
+        for action in self.state.get_possible_actions():
+            new_state = self.state.apply_action(action)
+            value = self.expectiminimax(depth, 'chance')
+            if value > best_value:
+                best_value = value
+                best_action = action
+        return best_action

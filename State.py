@@ -2,6 +2,14 @@ from Player import player
 
 class state :
 
+    # Probability of rolling a specific number(1 to 5)
+    #     1 / 6
+    # Probability of rolling a 6 followed by another roll
+    #     1 / 6 * 5 / 6 = 5 / 36
+    # Probability of rolling two consecutive 6s followed by another roll
+    #     (1 / 6) * (1 / 6) * (5 / 6) = 5 / 216
+    # Probability of rolling three consecutive 6s
+    #     (1 / 6) * (1 / 6) * (1 / 6) = 1 / 216
 
     # end = [['G','G','G','G','G'],['B','B','B','B','B'],['Y','Y','Y','Y','Y'],['R','R','R','R','R']]
     # colorMap = {
@@ -13,6 +21,14 @@ class state :
 
     # safe place is in index  8+i*13  where i is [0,1,2,3]
     safe = [8,21,34,47]
+
+    current_player_index = 0
+
+    def next_player(this):
+        global current_player_index
+        this.playerTurn = this.players[current_player_index]
+        current_player_index = (current_player_index + 1) % len(this.players)
+        # return current_player
 
     def __init__(self,players,playerTurn,parent=None,action=None,cost=0,depth=0):
 
@@ -42,6 +58,7 @@ class state :
     def generate_next_states(self):
         return states
 
+    # (self, action)
     def apply_move(self,piece,number):
         
         for player in self.players:
