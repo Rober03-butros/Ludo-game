@@ -7,7 +7,13 @@ p1 = player('R', isHuman=True)
 p2 = player('G', isHuman=True)
 
 players = [p1, p2]
-s = state(players, 0)
+s = state(players, 'R')
+
+
+# s2 = s.copy()
+# print('State equality check : ' + str(s == s2))
+# s.apply_single_move(p1.pieces[1],6)
+# print('State equality check : ' + str(s == s2))
 
 # # print(s.is_final())
 # print(p1.endPoint)
