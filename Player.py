@@ -2,6 +2,11 @@ from Piece import piece
 import copy
 
 
+# sorting pieces by index
+def sort_pieces(pieces):
+    pieces.sort(key=lambda piece: piece.number)
+
+
 class player:
 
     def __init__(self, color, pieces=None, isHuman=False):
@@ -20,6 +25,24 @@ class player:
         self.color = color
         self.endPoint = 55
         self.ishuman = isHuman
+
+    def __hash__(self):
+        pieces_hashes = tuple(hash(piece) for piece in self.pieces)
+        return pieces_hashes
+
+    def __eq__(self, other):
+
+        if not isinstance(other, player):
+            return False
+
+        sort_pieces(self.pieces)
+        sort_pieces(other.pieces)
+        for piece1 ,piece2 in zip(self.pieces, other.pieces):
+            if not piece1 == piece2:
+                return False
+
+        return True
+
 
     def change_endpoint(self):
         self.endPoint -= 1
