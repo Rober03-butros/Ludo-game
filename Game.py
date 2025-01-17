@@ -1,15 +1,13 @@
 from Logic import logic
 from State import state
 from Player import player
-import random 
+import random
 
+p1 = player('R', isHuman=True)
+p2 = player('G', isHuman=True)
 
-p1 = player('R',True)
-p2 = player('G',True)
-
-
-players = [p1,p2]
-s = state(players,0)
+players = [p1, p2]
+s = state(players, 0)
 
 # # print(s.is_final())
 # print(p1.endPoint)

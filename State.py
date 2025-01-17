@@ -1,7 +1,4 @@
-from Player import player
-
-class state :
-
+class state:
     # Probability of rolling a specific number(1 to 5)
     #     1 / 6
     # Probability of rolling a 6 followed by another roll
@@ -20,27 +17,27 @@ class state :
     #     }
 
     # safe place is in index  8+i*13  where i is [0,1,2,3]
-    safe = [8,21,34,47]
+    safe = [8, 21, 34, 47]
 
     current_player_index = 0
 
-    def next_player(this):
+    def next_player(self):
         global current_player_index
-        this.playerTurn = this.players[current_player_index]
-        current_player_index = (current_player_index + 1) % len(this.players)
+        self.playerTurn = self.players[current_player_index]
+        current_player_index = (current_player_index + 1) % len(self.players)
         # return current_player
 
-    def __init__(self,players,playerTurn,parent=None,action=None,cost=0,depth=0):
+    def __init__(self, players, playerTurn, parent=None, action=None, cost=0, depth=0):
 
-        #player is a list of objects (player).
+        # player is a list of objects (player).
         self.players = players
         self.playerTurn = playerTurn
         self.parent = parent
-        #action is a number on dice and the piece we want to move it
+        # action is a number on dice and the piece we want to move it
         self.action = action
         self.depth = depth
         self.cost = cost
-        self.grid = [' _ ' for i in range(52)] 
+        self.grid = [' _ ' for i in range(52)]
 
     '''
     cost:
@@ -53,23 +50,133 @@ class state :
     '''
 
     def get_possible_actions(self):
-        return action
+
+        possible_actions = []
+
+        # playerTurn is containing the color of the current player
+        player = next(
+            (player for player in self.players if player.color == self.playerTurn), None)
+
+        # if playerTurn changed to containing the player object
+        # player = self.playerTurn
+
+        for piece in player.pieces:
+            for number in range(1, 7):
+                action = []
+
+                if not self.can_move(player, piece, number):
+                    continue
+
+                if not number == 6:
+                    action = [(piece, number)]
+                    possible_actions.append(action)
+                else:
+                    state_copy = self.copy()
+
+                    matching_player = next(
+                        (player for player in state_copy.players if player.color == piece.color), None)
+
+                    matching_piece = next(
+                        (p for p in matching_player.pieces if p.number == piece.number), None)
+
+                    returned = state_copy.apply_single_move(matching_piece, number)
+                    new_state = returned[0]
+                    removed = returned[1]
+                    if removed:
+                        action = [(matching_piece, 6)]
+                        possible_actions.append(action)
+                    else:
+                        for piece1 in matching_player.pieces:
+                            for number1 in range(1, 7):
+                                action = [(matching_piece, 6)]
+
+                                player1 = None
+                                for p in new_state.players:
+                                    if p.color == player.color:
+                                        player1 = p
+                                        break
+
+                                if not new_state.can_move(player1, piece1, number1):
+                                    continue
+
+                                if not number1 == 6:
+                                    # action = [(piece,6),(piece1,number1)]
+                                    action.append((piece1, number1))
+                                    possible_actions.append(action)
+                                else:
+                                    state_copy1 = new_state.copy()
+
+                                    matching_player1 = next(
+                                        (player for player in state_copy1.players if player.color == piece1.color),
+                                        None)
+
+                                    matching_piece1 = next(
+                                        (p for p in matching_player1.pieces if p.number == piece1.number), None)
+
+                                    returned = state_copy1.apply_single_move(matching_piece1, number1)
+                                    new_state1 = returned[0]
+                                    removed1 = returned[1]
+                                    if removed1:
+                                        # action = [(piece, 6),(piece, 6)]
+                                        action.append((matching_piece1, 6))
+                                        possible_actions.append(action)
+                                    else:
+                                        for piece2 in matching_player1.pieces:
+                                            for number2 in range(1, 7):
+                                                action = [(piece, 6), (matching_piece1, 6)]
+
+                                                player2 = None
+                                                for p in new_state1.players:
+                                                    if p.color == player.color:
+                                                        player2 = p
+                                                        break
+
+                                                if not new_state1.can_move(player2, piece2, number2):
+                                                    continue
+                                                # action = [(piece,6),(piece1,6),(piece2,number2)]
+                                                action.append((piece2, number2))
+                                                possible_actions.append(action)
+                                                action = []
+
+                            possible_actions.append(action)
+                            action = []
+
+        return possible_actions
 
     def generate_next_states(self):
-        return states
+        next_states = []
+        for action in self.get_possible_actions():
+            next_states.append(self.apply_move(action))
+        return next_states
 
-    # (self, action)
-    def apply_move(self,piece,number):
-        
+    def apply_move(self, action):
+
+        if not action in self.get_possible_actions():
+            # throw an exception !!!?
+            return self, False
+
+        check = False
+        current_state = self
+
+        for move in action:
+            returned = current_state.apply_single_move(move[0], move[1])
+            new_state = returned[0]
+            removed = returned[1]
+            current_state = new_state
+            if removed:
+                break
+
+        return current_state, check
+
+    def apply_single_move(self, piece, number):
+
+        currentPlayer = None
         for player in self.players:
             if player.color == piece.color:
                 currentPlayer = player
-                break 
+                break
 
-        if not self.can_move(currentPlayer,piece,number):
-            return state
-
-        # if the piece is out of the board, Enter it 
+        # if the piece is out of the board, Enter it
         newIndex = 0
         # if the piece is already in the board, move it
         if piece.index != -1:
@@ -80,58 +187,59 @@ class state :
         # if it reach to the end, Change the endpoint for this player
         if newIndex == currentPlayer.endPoint:
             currentPlayer.change_endpoint()
-            return self
+            return self, False
         # there are opponents here, remove them
-        self.remove_opponent(piece,currentPlayer)
+        if self.remove_opponent(piece, currentPlayer):
+            return self, True
 
-        return self
+        return self, False
 
-    def can_move(self,player,piece,number):
+    def can_move(self, player, piece, number):
 
-        #move piece from start point
-        if piece.index == -1 :
+        # move piece from start point
+        if piece.index == -1:
             return number == 6
 
-        #check if the piece will reach the end point or not
-        if piece.index+number > 50:
-            return piece.index+number == player.endPoint
+        # check if the piece will reach the end point or not
+        if piece.index + number > 50:
+            return piece.index + number == player.endPoint
 
-        #check if there is a wall 
+        # check if there is a wall
         for step in range(number):
-            if self.there_are_wall((player.get_index(piece)+step)%52,piece.color) :
+            if self.there_are_wall((player.get_index(piece) + step) % 52, piece.color):
                 return False
 
         return True
 
     def is_final(self):
         for player in self.players:
-            if(self.is_win(player)):
+            if (self.is_win(player)):
                 print(f'player with color {player.color} win')
                 return True
         return False
-    
-    def is_win(self,player):
+
+    def is_win(self, player):
         return player.endPoint <= 51
 
     # def print(self):
-        
-        # for i in range(5):
-        #     for j in range(4):
-        #         print(f"                                  {str(self.end[j][i])}    ",end='')
-        #     print()
 
-        # grid = [' _ ' for i in range(52)]
+    # for i in range(5):
+    #     for j in range(4):
+    #         print(f"                                  {str(self.end[j][i])}    ",end='')
+    #     print()
 
-        # for player in self.players:
-        #     for piece in player.pieces:
-        #         if piece.index >= 0 and piece.index < player.endPoint:
-        #             grid[(piece.index-player.shift)%52] = ' '+piece.color+str(piece.number)
+    # grid = [' _ ' for i in range(52)]
 
-        # for i in range(52):
-        #     print(grid[i],end='')
-        # print()
-    
-    def there_are_wall(self,index,color):
+    # for player in self.players:
+    #     for piece in player.pieces:
+    #         if piece.index >= 0 and piece.index < player.endPoint:
+    #             grid[(piece.index-player.shift)%52] = ' '+piece.color+str(piece.number)
+
+    # for i in range(52):
+    #     print(grid[i],end='')
+    # print()
+
+    def there_are_wall(self, index, color):
         # count number of pieces that not same as my color in this index
         for player in self.players:
             if player.color == color:
@@ -140,19 +248,26 @@ class state :
             for piece in player.pieces:
                 count += (index == player.get_index(piece))
             # if the count > 1 then there are a wall
-            if count>1:
+            if count > 1:
                 return True
         return False
 
-    def remove_opponent(self,piece,player):
-        #if safe point do not do anythings
+    def remove_opponent(self, piece, player):
+
+        # if safe point do not do anything
+
+        removed = False  # indicates if we have removed opponent pieces or not
         if player.get_index(piece) in self.safe:
-            return
+            return removed
 
         for opponent in self.players:
             if player == opponent:
                 continue
             for opponent_piece in opponent.pieces:
                 if player.get_index(piece) == opponent.get_index(opponent_piece):
-                    opponent_piece.index=-1
-             
+                    opponent_piece.index = -1
+                    removed = True
+        return removed
+
+    def copy(self):
+        return state([player.copy() for player in self.players], self.playerTurn)
