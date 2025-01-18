@@ -28,7 +28,7 @@ class player:
 
     def __hash__(self):
         pieces_hashes = tuple(hash(piece) for piece in self.pieces)
-        return pieces_hashes
+        return hash(pieces_hashes)
 
     def __eq__(self, other):
 
