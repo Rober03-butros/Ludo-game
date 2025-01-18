@@ -166,7 +166,7 @@ class state:
 
         for action in self.get_possible_actions():
             state_copy = self.copy()
-            new_state,_, action_cost = state_copy.apply_move(action)
+            new_state, action_cost = state_copy.apply_move(action)
             new_state.cost=action_cost
             new_state.action=action
             next_states.add(new_state)
