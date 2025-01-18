@@ -86,84 +86,78 @@ class state:
         for piece in player.pieces:
             for number in range(1, 7):
                 if dice_number == number or dice_number == 0:
-                    action = []
 
                     if not self.can_move(player, piece, number):
                         continue
 
-                    if not number == 6:
-                        action = [(piece, number)]
+                    action = [(piece, number)]
+
+                    state_copy = self.copy()
+
+                    matching_player = next(
+                        (player for player in state_copy.players if player.color == piece.color), None)
+
+                    matching_piece = next(
+                        (p for p in matching_player.pieces if p.number == piece.number), None)
+
+                    returned = state_copy.apply_single_move(matching_piece, number)
+                    new_state = returned[0]
+                    removed = returned[1]
+
+                    if not number == 6 and not removed:
                         possible_actions.append(action)
                     else:
-                        state_copy = self.copy()
+                        for piece1 in matching_player.pieces:
+                            for number1 in range(1, 7):
 
-                        matching_player = next(
-                            (player for player in state_copy.players if player.color == piece.color), None)
+                                action = [(piece, number)]
 
-                        matching_piece = next(
-                            (p for p in matching_player.pieces if p.number == piece.number), None)
+                                player1 = matching_player
+                                # for p in new_state.players:
+                                #     if p.color == player.color:
+                                #         player1 = p
+                                #         break
 
-                        returned = state_copy.apply_single_move(matching_piece, number)
-                        new_state = returned[0]
-                        removed = returned[1]
-                        if removed:
-                            action = [(matching_piece, 6)]
-                            possible_actions.append(action)
-                        else:
-                            for piece1 in matching_player.pieces:
-                                for number1 in range(1, 7):
-                                    action = [(matching_piece, 6)]
+                                if not new_state.can_move(player1, piece1, number1):
+                                    continue
 
-                                    player1 = None
-                                    for p in new_state.players:
-                                        if p.color == player.color:
-                                            player1 = p
-                                            break
+                                action.append((piece1, number1))
 
-                                    if not new_state.can_move(player1, piece1, number1):
-                                        continue
+                                state_copy1 = new_state.copy()
 
-                                    if not number1 == 6:
-                                        # action = [(piece,6),(piece1,number1)]
-                                        action.append((piece1, number1))
-                                        possible_actions.append(action)
-                                    else:
-                                        state_copy1 = new_state.copy()
+                                matching_player1 = next(
+                                    (player for player in state_copy1.players if player.color == piece1.color),
+                                    None)
 
-                                        matching_player1 = next(
-                                            (player for player in state_copy1.players if player.color == piece1.color),
-                                            None)
+                                matching_piece1 = next(
+                                    (p for p in matching_player1.pieces if p.number == piece1.number), None)
 
-                                        matching_piece1 = next(
-                                            (p for p in matching_player1.pieces if p.number == piece1.number), None)
+                                returned = state_copy1.apply_single_move(matching_piece1, number1)
+                                new_state1 = returned[0]
+                                removed1 = returned[1]
 
-                                        returned = state_copy1.apply_single_move(matching_piece1, number1)
-                                        new_state1 = returned[0]
-                                        removed1 = returned[1]
-                                        if removed1:
-                                            # action = [(piece, 6),(piece, 6)]
-                                            action.append((matching_piece1, 6))
+                                if not number1 == 6 and not removed1:
+                                    possible_actions.append(action)
+                                else:
+                                    for piece2 in matching_player1.pieces:
+                                        for number2 in range(1, 7):
+
+                                            action = [(piece, number),(piece1,number1)]
+
+                                            player2 = matching_player1
+                                            # for p in new_state1.players:
+                                            #     if p.color == player.color:
+                                            #         player2 = p
+                                            #         break
+
+                                            if not new_state1.can_move(player2, piece2, number2):
+                                                continue
+                                            action.append((piece2, number2))
                                             possible_actions.append(action)
-                                        else:
-                                            for piece2 in matching_player1.pieces:
-                                                for number2 in range(1, 7):
-                                                    action = [(piece, 6), (matching_piece1, 6)]
+                                            action = []
 
-                                                    player2 = None
-                                                    for p in new_state1.players:
-                                                        if p.color == player.color:
-                                                            player2 = p
-                                                            break
-
-                                                    if not new_state1.can_move(player2, piece2, number2):
-                                                        continue
-                                                    # action = [(piece,6),(piece1,6),(piece2,number2)]
-                                                    action.append((piece2, number2))
-                                                    possible_actions.append(action)
-                                                    action = []
-
-                                possible_actions.append(action)
-                                action = []
+                            possible_actions.append(action)
+                            action = []
 
         return possible_actions
 

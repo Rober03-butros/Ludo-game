@@ -5,14 +5,14 @@ class logic:
 
     def start_game(self, state):
         # DON'T TOUCH
-        # print('_____________________________________________________')
-        # print('POSSIBLE ACTIONS : ')
-        # actions = state.get_possible_actions()
-        # for action in actions:
-        #     for move in action:
-        #         print('piece color : ' + str(move[0].color) + '  |  piece index : ' + str(move[0].index) + '  |  piece number : ' + str(move[0].number) + '  |  number : ' +  str(move[1]))
-        #     print('BOOOOOOOOOOORDEEEEEEEEEEEEEEEEER')
-        # print('_____________________________________________________')
+        print('_____________________________________________________')
+        print('POSSIBLE ACTIONS : ')
+        actions = state.get_possible_actions()
+        for action in actions:
+            for move in action:
+                print('piece color : ' + str(move[0].color) + '  |  piece index : ' + str(move[0].index) + '  |  piece number : ' + str(move[0].number) + '  |  number : ' +  str(move[1]))
+            print('BOOOOOOOOOOORDEEEEEEEEEEEEEEEEER')
+        print('_____________________________________________________')
 
         print('Start game')
         print()
