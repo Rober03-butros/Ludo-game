@@ -176,7 +176,7 @@ class state:
 
         if not action in self.get_possible_actions():
             # throw an exception !!!?
-            return self,False, 0
+            return self, 0
 
         check = False
         current_state = self
@@ -188,11 +188,10 @@ class state:
             removed= returned[1]
             total_cost+= returned[2]
             current_state = new_state
-            if removed:
-                break
-            
+           
+
         print(f'the cost = {total_cost}')
-        return current_state,check, total_cost
+        return current_state,total_cost
 
     def apply_single_move(self, piece, number):
 
@@ -221,7 +220,7 @@ class state:
 
         if currentPiece.index ==0:
             print('new')
-            return self, 8
+            return self,False, 8
 
         # if the piece is in safe place
         elif self.is_safe_place(currentPiece):
