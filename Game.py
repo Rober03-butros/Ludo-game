@@ -4,11 +4,15 @@ from Player import player
 import random
 
 p1 = player('R', isHuman=True)
-p2 = player('G', isHuman=True)
+p2 = player('G', isHuman=False)
+
+p2.pieces[0].index=0
+# p2.pieces[1].index=0
+# p2.pieces[2].index=0
+# p2.pieces[3].index=0
 
 players = [p1, p2]
 s = state(players, 'R')
-
 
 # s2 = s.copy()
 # print('State equality check : ' + str(s == s2))

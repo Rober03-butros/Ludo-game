@@ -166,53 +166,86 @@ class state:
 
         for action in self.get_possible_actions():
             state_copy = self.copy()
-            next_states.add(state_copy.apply_move(action))
+            new_state, action_cost = state_copy.apply_move(action)
+            new_state.cost=action_cost
+            new_state.action=action
+            next_states.add(new_state)
         return next_states
 
     def apply_move(self, action):
 
         if not action in self.get_possible_actions():
             # throw an exception !!!?
-            return self, False
+            return self, 0
 
-        check = False
+        # check = False
         current_state = self
+        total_cost=0
 
         for move in action:
             returned = current_state.apply_single_move(move[0], move[1])
             new_state = returned[0]
-            removed = returned[1]
+            total_cost+= returned[1]
             current_state = new_state
-            if removed:
-                break
 
-        return current_state, check
+        print(f'the cost = {total_cost}')
+        return current_state, total_cost
 
     def apply_single_move(self, piece, number):
 
         currentPlayer = None
+        currentPiece = None
         for player in self.players:
             if player.color == piece.color:
+                for p in player.pieces:
+                    if p.number == piece.number:
+                        currentPiece = p
+                        break
                 currentPlayer = player
                 break
 
         # if the piece is out of the board, Enter it
-        newIndex = 0
-        # if the piece is already in the board, move it
-        if piece.index != -1:
-            newIndex = piece.index + number
+        newIndex = 0 
 
-        piece.index = newIndex
+        # if the piece is already in the board, move it
+        if currentPiece.index != -1:
+            newIndex = currentPiece.index + number
+            
+        currentPiece.index = newIndex
+        result_remove_opponent=self.remove_opponent(currentPiece, currentPlayer)
+        result_is_wall=self.is_wall(currentPiece, currentPlayer)
+
+
+        if currentPiece.index ==0:
+            print('new')
+            return self, 8
+
+        # if the piece is in safe place
+        elif self.is_safe_place(currentPiece):
+            print('safe')
+            return self , 4
 
         # if it reach to the end, Change the endpoint for this player
-        if newIndex == currentPlayer.endPoint:
-            currentPlayer.change_endpoint()
-            return self, False
-        # there are opponents here, remove them
-        if self.remove_opponent(piece, currentPlayer):
-            return self, True
+        elif newIndex == currentPlayer.endPoint:
+                currentPlayer.change_endpoint()
+                print('endpoint')
+                return self, 15
 
-        return self, False
+        # there are opponents here, remove them
+        elif  result_remove_opponent[0]:
+                cost_of_remove_opponent=5+(2*result_remove_opponent[1])
+                print(f'opponents {cost_of_remove_opponent}')
+                return self, cost_of_remove_opponent
+
+        # if the piece build a wall
+        elif result_is_wall[0]:
+            cost_of_wall=5-(2*(result_is_wall[1]-2))
+            print(f'build a wall {cost_of_wall} , num= {result_is_wall[1]}')
+            return self, cost_of_wall
+        
+        print('default')
+        return self , 2
+
 
     def can_move(self, player, piece, number):
 
@@ -272,22 +305,41 @@ class state:
                 return True
         return False
 
+    def is_safe_place(self , piece):
+        if piece.index in self.safe:
+            return True
+        return False
+
+    def is_wall(self, piece, player):
+        count=1
+        for piece1 in player.pieces:
+            if piece1.index==piece.index and piece1.number !=piece.number:
+                count+=1
+                print(f'the index :{piece1.index} piece1 number:{piece1.number} , piece number:{piece.number}')
+        if count==1:
+            return False , 0
+        return True , count
+
+
     def remove_opponent(self, piece, player):
 
         # if safe point do not do anything
-
+        removed_count = 0 
         removed = False  # indicates if we have removed opponent pieces or not
         if player.get_index(piece) in self.safe:
-            return removed
+            return removed , removed_count
+            # return removed_count
 
         for opponent in self.players:
             if player == opponent:
                 continue
             for opponent_piece in opponent.pieces:
                 if player.get_index(piece) == opponent.get_index(opponent_piece):
+                    removed_count+=1
                     opponent_piece.index = -1
                     removed = True
-        return removed
+        return removed , removed_count
+        # return removed_count
 
     def copy(self):
         return state([player.copy() for player in self.players], self.playerTurn)

@@ -4,18 +4,18 @@ import random
 class logic:
 
     def start_game(self, state):
-        # DON'T TOUCH
-        print('_____________________________________________________')
-        print('POSSIBLE ACTIONS : ')
-        actions = state.get_possible_actions()
-        for action in actions:
-            for move in action:
-                print('piece color : ' + str(move[0].color) + '  |  piece index : ' + str(move[0].index) + '  |  piece number : ' + str(move[0].number) + '  |  number : ' +  str(move[1]))
-            print('BOOOOOOOOOOORDEEEEEEEEEEEEEEEEER')
-        print('_____________________________________________________')
+        # # DON'T TOUCH
+        # print('_____________________________________________________')
+        # print('POSSIBLE ACTIONS : ')
+        # actions = state.get_possible_actions()
+        # for action in actions:
+        #     for move in action:
+        #         print('piece color : ' + str(move[0].color) + '  |  piece index : ' + str(move[0].index) + '  |  piece number : ' + str(move[0].number) + '  |  number : ' +  str(move[1]))
+        #     print('BOOOOOOOOOOORDEEEEEEEEEEEEEEEEER')
+        # print('_____________________________________________________')
 
-        print('Start game')
-        print()
+        # print('Start game')
+        # print()
         self.print_state(state)
         while (True):
             if state.is_final():
@@ -24,9 +24,11 @@ class logic:
                 if player.ishuman:
                     print(f'Your turn ({player.color} player)')
                     self.human_play(state, player.color)
+                    state.playerTurn = 'G'
                 else:
                     print(f'Computer turn ({player.color} player)')
-                    self.computer_play()
+                    self.computer_play(state)
+                    state.playerTurn = 'R'
 
                 # test baby
                 # print('_____________________________________________________')
@@ -73,8 +75,26 @@ class logic:
 
         #     print('The movement is not correct')
 
-    def computer_play(self):
-        print('computer play')
+    def computer_play(self,state):
+        number = self.throw_the_dice()
+
+        actions = state.get_possible_actions(number)
+        
+        best_move = [0,0]
+        best_cost = -1
+        print(actions)
+        for action in actions:
+            copyState = state.copy()
+            copyState.apply_move(action)
+            expect = self.Expectiminimax(copyState,3,'chance','max')
+            # # print(cost[0])
+            if best_cost < expect:
+                best_cost = expect
+                best_move = action
+
+        state.apply_move(best_move) 
+        print()
+        print(f'dice number is: {number}')
 
     def throw_the_dice(self):
         return random.randint(1, 6)
@@ -86,8 +106,39 @@ class logic:
                 print(f'number :{piece.number}                 index:{piece.index}     real{player.get_index(piece)}')
         print()
 
-    def Expectiminimax(self):
-        print('Expectiminimax')
+    def Expectiminimax(self,state,depth, lastNode,node):
+        # print(depth)
+        if depth == 0 or state.is_final():
+            return state.cost
+
+        if node == 'max':
+            best_value = float('-inf')
+            states = state.generate_next_states()
+            for newState in states:
+                value = self.Expectiminimax(newState,depth-1,node,'chance')
+                best_value = max(value,best_value)
+            return best_value
+
+        elif node == 'min':
+            best_value = float('inf')
+            states = state.generate_next_states()
+            for newState in states:
+                value = self.Expectiminimax(newState,depth-1,node,'chance')
+                best_value = min(value,best_value)
+            return best_value
+
+        else:
+            value = 0
+            if lastNode == 'min':
+                nextNode = 'max'
+            else:
+                nextNode = 'min'
+            states = state.generate_next_states()
+
+            for newState in states:
+                # value += self.Expectiminimax(newState,depth-1,node,nextNode)*self.calculate_probability(action[1])
+                value += self.Expectiminimax(newState,depth-1,node,nextNode)*(1/6)
+            return value
 
 
 # expectiminimax frame test
