@@ -166,7 +166,7 @@ class state:
 
         for action in self.get_possible_actions():
             state_copy = self.copy()
-            new_state, action_cost = state_copy.apply_move(action)
+            new_state,_, action_cost = state_copy.apply_move(action)
             new_state.cost=action_cost
             new_state.action=action
             next_states.add(new_state)
@@ -176,20 +176,23 @@ class state:
 
         if not action in self.get_possible_actions():
             # throw an exception !!!?
-            return self, 0
+            return self,False, 0
 
-        # check = False
+        check = False
         current_state = self
         total_cost=0
 
         for move in action:
             returned = current_state.apply_single_move(move[0], move[1])
             new_state = returned[0]
-            total_cost+= returned[1]
+            removed= returned[1]
+            total_cost+= returned[2]
             current_state = new_state
-
+            if removed:
+                break
+            
         print(f'the cost = {total_cost}')
-        return current_state, total_cost
+        return current_state,check, total_cost
 
     def apply_single_move(self, piece, number):
 
@@ -223,28 +226,28 @@ class state:
         # if the piece is in safe place
         elif self.is_safe_place(currentPiece):
             print('safe')
-            return self , 4
+            return self ,False, 4
 
         # if it reach to the end, Change the endpoint for this player
         elif newIndex == currentPlayer.endPoint:
                 currentPlayer.change_endpoint()
                 print('endpoint')
-                return self, 15
+                return self,False, 15
 
         # there are opponents here, remove them
         elif  result_remove_opponent[0]:
                 cost_of_remove_opponent=5+(2*result_remove_opponent[1])
                 print(f'opponents {cost_of_remove_opponent}')
-                return self, cost_of_remove_opponent
+                return self,True ,  cost_of_remove_opponent
 
         # if the piece build a wall
         elif result_is_wall[0]:
             cost_of_wall=5-(2*(result_is_wall[1]-2))
             print(f'build a wall {cost_of_wall} , num= {result_is_wall[1]}')
-            return self, cost_of_wall
+            return self, False ,  cost_of_wall
         
         print('default')
-        return self , 2
+        return self ,False ,  2
 
 
     def can_move(self, player, piece, number):
