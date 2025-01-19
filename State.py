@@ -161,10 +161,10 @@ class state:
 
         return possible_actions
 
-    def generate_next_states(self):
+    def generate_next_states(self,dice_number=0):
         next_states = set()
 
-        for action in self.get_possible_actions():
+        for action in self.get_possible_actions(dice_number):
             state_copy = self.copy()
             new_state, action_cost = state_copy.apply_move(action)
             new_state.cost=action_cost
@@ -190,7 +190,7 @@ class state:
             current_state = new_state
            
 
-        print(f'the cost = {total_cost}')
+        # print(f'the cost = {total_cost}')
         return current_state,total_cost
 
     def apply_single_move(self, piece, number):
@@ -219,33 +219,33 @@ class state:
 
 
         if currentPiece.index ==0:
-            print('new')
+            # print('new')
             return self,False, 8
 
         # if the piece is in safe place
         elif self.is_safe_place(currentPiece):
-            print('safe')
+            # print('safe')
             return self ,False, 4
 
         # if it reach to the end, Change the endpoint for this player
         elif newIndex == currentPlayer.endPoint:
                 currentPlayer.change_endpoint()
-                print('endpoint')
+                # print('endpoint')
                 return self,False, 15
 
         # there are opponents here, remove them
         elif  result_remove_opponent[0]:
                 cost_of_remove_opponent=5+(2*result_remove_opponent[1])
-                print(f'opponents {cost_of_remove_opponent}')
+                # print(f'opponents {cost_of_remove_opponent}')
                 return self,True ,  cost_of_remove_opponent
 
         # if the piece build a wall
         elif result_is_wall[0]:
             cost_of_wall=5-(2*(result_is_wall[1]-2))
-            print(f'build a wall {cost_of_wall} , num= {result_is_wall[1]}')
+            # print(f'build a wall {cost_of_wall} , num= {result_is_wall[1]}')
             return self, False ,  cost_of_wall
         
-        print('default')
+        # print('default')
         return self ,False ,  2
 
 
@@ -317,7 +317,7 @@ class state:
         for piece1 in player.pieces:
             if piece1.index==piece.index and piece1.number !=piece.number:
                 count+=1
-                print(f'the index :{piece1.index} piece1 number:{piece1.number} , piece number:{piece.number}')
+                # print(f'the index :{piece1.index} piece1 number:{piece1.number} , piece number:{piece.number}')
         if count==1:
             return False , 0
         return True , count
