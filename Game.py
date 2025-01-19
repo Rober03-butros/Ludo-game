@@ -6,14 +6,17 @@ import random
 p1 = player('R', isHuman=True)
 p2 = player('G', isHuman=False)
 
-p2.pieces[0].index=0
+# p2.pieces[0].index=0
 # p2.pieces[1].index=0
 # p2.pieces[2].index=0
 # p2.pieces[3].index=0
 
 players = [p1, p2]
 s = state(players, 'R')
-s.apply_move([(p2.pieces[1],6),(p2.pieces[1],5)])
+states = s.generate_next_states()
+for state in states:
+    print(state.cost)
+# s.apply_move([(p1.pieces[1],6),(p1.pieces[1],5)])
 
 # s2 = s.copy()
 # print('State equality check : ' + str(s == s2))

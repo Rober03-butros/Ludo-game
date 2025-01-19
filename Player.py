@@ -37,12 +37,11 @@ class player:
 
         sort_pieces(self.pieces)
         sort_pieces(other.pieces)
-        for piece1 ,piece2 in zip(self.pieces, other.pieces):
+        for piece1, piece2 in zip(self.pieces, other.pieces):
             if not piece1 == piece2:
                 return False
 
         return True
-
 
     def change_endpoint(self):
         self.endPoint -= 1
