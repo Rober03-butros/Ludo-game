@@ -83,36 +83,30 @@ class logic:
         else:
 
             if number != 6:
-                actions = [actions]
+                fix_action = []
+                for action in actions:
+                    fix_action.append([action])
+                actions = fix_action
 
             best_move = [0,0]
             best_cost = -1
-            # print(actions)
             for action in actions:
                 copyState = state.copy()
                 copyState.apply_single_move(action[0][0],action[0][1])
-                expect = self.Expectiminimax(copyState,3,'chance','max')
-                # # print(cost[0])
-                if best_cost < expect:
-                    best_cost = expect
+                cost = self.Expectiminimax(copyState,3,'chance','max')
+                print(F"cost:{cost}")
+                print(f"piece number:{action[0][0].number}     dice number:{action[0][1]}")
+
+                if best_cost < cost:
+                    best_cost = cost
                     best_move = action[0]
-
-
+            print()
+            print('computer move')
             print(f"piece number:{best_move[0].number}     dice number:{best_move[1]}")
             state.apply_single_move(best_move[0],best_move[1])
 
-        # print(f"{best_move[0].number}     {best_move[0].number}")
-        
-        # state.apply_move(best_move)
 
-        # # print(actions)
-        # copyState = state.copy()
-        # returned = self.Expectiminimax(copyState, 3, 'chance', 'max', number)
-        # print(returned)
-        # expect = returned[0]
-        # best_move = returned[1]
 
-        # print('best move : ' + str(best_move))
 
     def throw_the_dice(self):
         return random.randint(1, 6)
@@ -129,28 +123,33 @@ class logic:
             return state.cost
 
         if node == 'max':
+            # print(node)
             best_value = float('-inf')
-            states = state.generate_next_states(dice_number)
-            for newState in states:
-                value = self.Expectiminimax(newState,depth-1,node,'chance')
+            newState = state.copy()
+            for number in range(1,7):
+                value = self.Expectiminimax(newState,depth-1,node,'chance',number)
                 best_value = max(value,best_value)
             return best_value
 
         elif node == 'min':
+
             best_value = float('inf')
-            states = state.generate_next_states()
-            for newState in states:
-                value = self.Expectiminimax(newState,depth-1,node,'chance')
+            newState = state.copy()
+            for number in range(1,7):
+                value = self.Expectiminimax(newState,depth-1,node,'chance',number)
                 best_value = min(value,best_value)
             return best_value
 
         else:
+
             value = 0
             if lastNode == 'min':
+                state.playerTurn='G'
                 nextNode = 'max'
             else:
+                state.playerTurn='R'
                 nextNode = 'min'
-            states = state.generate_next_states()
+            states = state.generate_next_states(dice_number)
             for newState in states:
                 # value += self.Expectiminimax(newState,depth-1,node,nextNode)*self.calculate_probability(action[1])
                 value += self.Expectiminimax(newState,depth-1,node,nextNode)*(1/6)

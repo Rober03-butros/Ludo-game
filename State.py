@@ -71,7 +71,7 @@ class state:
         move a piece Normally = 2
     '''
 
-    def get_possible_actions(self,dice_number=0,turn = 2):
+    def get_possible_actions(self,dice_number=0,turn = 3):
         if turn == 0:
             return []
 
