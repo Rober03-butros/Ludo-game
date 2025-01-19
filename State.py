@@ -1,7 +1,7 @@
-
 # sorting players by color
 def sort_players(players):
     players.sort(key=lambda player: player.color)
+
 
 class state:
     # Probability of rolling a specific number(1 to 5)
@@ -61,7 +61,6 @@ class state:
 
         return True
 
-
     '''
     cost:
         put a piece in the end point = 15
@@ -72,7 +71,7 @@ class state:
         move a piece Normally = 2
     '''
 
-    def get_possible_actions(self,dice_number=0):
+    def get_possible_actions(self, dice_number=0):
 
         possible_actions = []
 
@@ -121,7 +120,10 @@ class state:
                                 if not new_state.can_move(player1, piece1, number1):
                                     continue
 
-                                action.append((piece1, number1))
+                                matching_piece = next(
+                                    (p for p in player.pieces if p.number == piece1.number), None)
+
+                                action.append((matching_piece, number1))
 
                                 state_copy1 = new_state.copy()
 
@@ -142,7 +144,7 @@ class state:
                                     for piece2 in matching_player1.pieces:
                                         for number2 in range(1, 7):
 
-                                            action = [(piece, number),(piece1,number1)]
+                                            action = [(piece, number), (matching_piece, number1)]
 
                                             player2 = matching_player1
                                             # for p in new_state1.players:
@@ -152,46 +154,47 @@ class state:
 
                                             if not new_state1.can_move(player2, piece2, number2):
                                                 continue
-                                            action.append((piece2, number2))
-                                            possible_actions.append(action)
-                                            action = []
 
-                            possible_actions.append(action)
-                            action = []
+                                            matching_piece1 = next(
+                                                (p for p in player.pieces if p.number == piece2.number), None)
+
+                                            action.append((matching_piece1, number2))
+                                            possible_actions.append(action)
 
         return possible_actions
 
-    def generate_next_states(self,dice_number=0):
+    def generate_next_states(self, dice_number=0):
         next_states = set()
 
         for action in self.get_possible_actions(dice_number):
             state_copy = self.copy()
             new_state, action_cost = state_copy.apply_move(action)
-            new_state.cost=action_cost
-            new_state.action=action
+            new_state.cost = action_cost
+            new_state.action = action
             next_states.add(new_state)
         return next_states
 
     def apply_move(self, action):
 
         if not action in self.get_possible_actions():
-            # throw an exception !!!?
-            return self, 0
+            print('action : ' + str(action))
+            raise Exception("Akalnahaaaa!!!")
 
-        check = False
         current_state = self
-        total_cost=0
+        total_cost = 0
 
         for move in action:
             returned = current_state.apply_single_move(move[0], move[1])
             new_state = returned[0]
-            removed= returned[1]
-            total_cost+= returned[2]
+            removed = returned[1]
+            total_cost += returned[2]
             current_state = new_state
-           
 
         # print(f'the cost = {total_cost}')
-        return current_state,total_cost
+        if total_cost == 0:
+            raise Exception('Total cost is ZERO !!!!!!!!!!!!!!')
+
+        return current_state, total_cost
 
     def apply_single_move(self, piece, number):
 
@@ -207,47 +210,45 @@ class state:
                 break
 
         # if the piece is out of the board, Enter it
-        newIndex = 0 
+        newIndex = 0
 
         # if the piece is already in the board, move it
         if currentPiece.index != -1:
             newIndex = currentPiece.index + number
-            
+
         currentPiece.index = newIndex
-        result_remove_opponent=self.remove_opponent(currentPiece, currentPlayer)
-        result_is_wall=self.is_wall(currentPiece, currentPlayer)
+        result_remove_opponent = self.remove_opponent(currentPiece, currentPlayer)
+        result_is_wall = self.is_wall(currentPiece, currentPlayer)
 
-
-        if currentPiece.index ==0:
+        if currentPiece.index == 0:
             # print('new')
-            return self,False, 8
+            return self, False, 8
 
         # if the piece is in safe place
         elif self.is_safe_place(currentPiece):
             # print('safe')
-            return self ,False, 4
+            return self, False, 4
 
         # if it reach to the end, Change the endpoint for this player
         elif newIndex == currentPlayer.endPoint:
-                currentPlayer.change_endpoint()
-                # print('endpoint')
-                return self,False, 15
+            currentPlayer.change_endpoint()
+            # print('endpoint')
+            return self, False, 15
 
         # there are opponents here, remove them
-        elif  result_remove_opponent[0]:
-                cost_of_remove_opponent=5+(2*result_remove_opponent[1])
-                # print(f'opponents {cost_of_remove_opponent}')
-                return self,True ,  cost_of_remove_opponent
+        elif result_remove_opponent[0]:
+            cost_of_remove_opponent = 5 + (2 * result_remove_opponent[1])
+            # print(f'opponents {cost_of_remove_opponent}')
+            return self, True, cost_of_remove_opponent
 
         # if the piece build a wall
         elif result_is_wall[0]:
-            cost_of_wall=5-(2*(result_is_wall[1]-2))
+            cost_of_wall = 5 - (2 * (result_is_wall[1] - 2))
             # print(f'build a wall {cost_of_wall} , num= {result_is_wall[1]}')
-            return self, False ,  cost_of_wall
-        
-        # print('default')
-        return self ,False ,  2
+            return self, False, cost_of_wall
 
+        # print('default')
+        return self, False, 2
 
     def can_move(self, player, piece, number):
 
@@ -307,29 +308,28 @@ class state:
                 return True
         return False
 
-    def is_safe_place(self , piece):
+    def is_safe_place(self, piece):
         if piece.index in self.safe:
             return True
         return False
 
     def is_wall(self, piece, player):
-        count=1
+        count = 1
         for piece1 in player.pieces:
-            if piece1.index==piece.index and piece1.number !=piece.number:
-                count+=1
+            if piece1.index == piece.index and piece1.number != piece.number:
+                count += 1
                 # print(f'the index :{piece1.index} piece1 number:{piece1.number} , piece number:{piece.number}')
-        if count==1:
-            return False , 0
-        return True , count
-
+        if count == 1:
+            return False, 0
+        return True, count
 
     def remove_opponent(self, piece, player):
 
         # if safe point do not do anything
-        removed_count = 0 
+        removed_count = 0
         removed = False  # indicates if we have removed opponent pieces or not
         if player.get_index(piece) in self.safe:
-            return removed , removed_count
+            return removed, removed_count
             # return removed_count
 
         for opponent in self.players:
@@ -337,11 +337,12 @@ class state:
                 continue
             for opponent_piece in opponent.pieces:
                 if player.get_index(piece) == opponent.get_index(opponent_piece):
-                    removed_count+=1
+                    removed_count += 1
                     opponent_piece.index = -1
                     removed = True
-        return removed , removed_count
+        return removed, removed_count
         # return removed_count
 
     def copy(self):
-        return state([player.copy() for player in self.players], self.playerTurn,self.parent,self.action,self.cost,self.depth)
+        return state([player.copy() for player in self.players], self.playerTurn, self.parent, self.action, self.cost,
+                     self.depth)
