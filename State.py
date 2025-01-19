@@ -344,4 +344,4 @@ class state:
         # return removed_count
 
     def copy(self):
-        return state([player.copy() for player in self.players], self.playerTurn)
+        return state([player.copy() for player in self.players], self.playerTurn,self.parent,self.action,self.cost,self.depth)

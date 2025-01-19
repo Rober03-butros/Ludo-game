@@ -13,6 +13,7 @@ p2.pieces[0].index=0
 
 players = [p1, p2]
 s = state(players, 'R')
+s.apply_move([(p2.pieces[1],6),(p2.pieces[1],5)])
 
 # s2 = s.copy()
 # print('State equality check : ' + str(s == s2))
