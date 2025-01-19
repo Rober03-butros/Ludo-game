@@ -1,6 +1,6 @@
 import random
 
-from sympy.physics.units import length
+# from sympy.physics.units import length
 
 
 class logic:
@@ -73,22 +73,46 @@ class logic:
 
     def computer_play(self, state):
         number = self.throw_the_dice()
-
-        actions = state.get_possible_actions(number)
-
-        best_move = [0, 0]
-        best_cost = -1
-        # print(actions)
-        copyState = state.copy()
-        returned = self.Expectiminimax(copyState, 3, 'chance', 'max', number)
-        print(returned)
-        expect = returned[0]
-        best_move = returned[1]
-
-        print('best move : ' + str(best_move))
-        state.apply_move(best_move)
-        print()
         print(f'dice number is: {number}')
+        actions = state.get_possible_actions(number,1)
+
+        if actions == []:
+            print('you can not move')
+
+
+        else:
+
+            if number != 6:
+                actions = [actions]
+
+            best_move = [0,0]
+            best_cost = -1
+            # print(actions)
+            for action in actions:
+                copyState = state.copy()
+                copyState.apply_single_move(action[0][0],action[0][1])
+                expect = self.Expectiminimax(copyState,3,'chance','max')
+                # # print(cost[0])
+                if best_cost < expect:
+                    best_cost = expect
+                    best_move = action[0]
+
+
+            print(f"piece number:{best_move[0].number}     dice number:{best_move[1]}")
+            state.apply_single_move(best_move[0],best_move[1])
+
+        # print(f"{best_move[0].number}     {best_move[0].number}")
+        
+        # state.apply_move(best_move)
+
+        # # print(actions)
+        # copyState = state.copy()
+        # returned = self.Expectiminimax(copyState, 3, 'chance', 'max', number)
+        # print(returned)
+        # expect = returned[0]
+        # best_move = returned[1]
+
+        # print('best move : ' + str(best_move))
 
     def throw_the_dice(self):
         return random.randint(1, 6)
@@ -101,33 +125,24 @@ class logic:
         print()
 
     def Expectiminimax(self, state, depth, lastNode, node, dice_number=0):
-        # print(depth)
         if depth == 0 or state.is_final():
-            if state.action == None:
-                raise Exception('Action is NONE !!!!!!!!!!!!')
-            if state.cost == float('-inf'):
-                raise Exception('Cost is -inf')
-            return state.cost, state.action
+            return state.cost
 
         if node == 'max':
             best_value = float('-inf')
             states = state.generate_next_states(dice_number)
             for newState in states:
-                returned = self.Expectiminimax(newState, depth - 1, node, 'chance')
-                value = returned[0]
-                best_move = returned[1]
-                best_value = max(value, best_value)
-            return best_value, state.action
+                value = self.Expectiminimax(newState,depth-1,node,'chance')
+                best_value = max(value,best_value)
+            return best_value
 
         elif node == 'min':
             best_value = float('inf')
-            states = state.generate_next_states(dice_number)
+            states = state.generate_next_states()
             for newState in states:
-                returned = self.Expectiminimax(newState, depth - 1, node, 'chance')
-                value = returned[0]
-                best_move = returned[1]
-                best_value = min(value, best_value)
-            return best_value, state.action
+                value = self.Expectiminimax(newState,depth-1,node,'chance')
+                best_value = min(value,best_value)
+            return best_value
 
         else:
             value = 0
@@ -135,14 +150,11 @@ class logic:
                 nextNode = 'max'
             else:
                 nextNode = 'min'
-            states = state.generate_next_states(dice_number)
-
+            states = state.generate_next_states()
             for newState in states:
-                returned = self.Expectiminimax(newState, depth - 1, node, nextNode)
-                v = returned[0] * (1 / 6)
-                best_move = returned[1]
-                value += v
-            return value, state.action
+                # value += self.Expectiminimax(newState,depth-1,node,nextNode)*self.calculate_probability(action[1])
+                value += self.Expectiminimax(newState,depth-1,node,nextNode)*(1/6)
+            return value
 
 
 # expectiminimax frame test
