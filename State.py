@@ -237,6 +237,8 @@ class state:
 
         currentPlayer = None
         currentPiece = None
+        total_cost=0
+        removed=False
         for player in self.players:
             if player.color == piece.color:
                 for p in player.pieces:
@@ -259,33 +261,42 @@ class state:
 
         if currentPiece.index == 0:
             # print('new')
-            return self, False, 8
+            # return self, False, 8
+            total_cost+=8
 
         # if the piece is in safe place
-        elif self.is_safe_place(currentPiece):
+        if self.is_safe_place(currentPiece):
             # print('safe')
-            return self, False, 4
+            # return self, False, 4
+            total_cost+=4
 
         # if it reach to the end, Change the endpoint for this player
-        elif newIndex == currentPlayer.endPoint:
+        if newIndex == currentPlayer.endPoint:
             currentPlayer.change_endpoint()
             # print('endpoint')
-            return self, False, 15
+            total_cost+=15
 
         # there are opponents here, remove them
-        elif result_remove_opponent[0]:
+        if result_remove_opponent[0]:
             cost_of_remove_opponent = 5 + (2 * result_remove_opponent[1])
             # print(f'opponents {cost_of_remove_opponent}')
-            return self, True, cost_of_remove_opponent
+            # return self, True, cost_of_remove_opponent
+            removed=True
+            total_cost+=cost_of_remove_opponent
+        
 
         # if the piece build a wall
-        elif result_is_wall[0]:
+        if result_is_wall[0]:
             cost_of_wall = 5 - (2 * (result_is_wall[1] - 2))
             # print(f'build a wall {cost_of_wall} , num= {result_is_wall[1]}')
-            return self, False, cost_of_wall
+            # return self, False, cost_of_wall
+            total_cost+=cost_of_wall
+
+        if total_cost==0:
+            total_cost=2
 
         # print('default')
-        return self, False, 2
+        return self, removed, total_cost
 
     def can_move(self, player, piece, number):
 
