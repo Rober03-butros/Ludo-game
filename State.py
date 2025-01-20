@@ -24,14 +24,6 @@ class state:
     # safe place is in index  8+i*13  where i is [0,1,2,3]
     safe = [8, 21, 34, 47]
 
-    current_player_index = 0
-
-    def next_player(self):
-        global current_player_index
-        self.playerTurn = self.players[current_player_index]
-        current_player_index = (current_player_index + 1) % len(self.players)
-        # return current_player
-
     def __init__(self, players, playerTurn, parent=None, action=None, cost=0, depth=0):
 
         # player is a list of objects (player).
@@ -71,7 +63,7 @@ class state:
         move a piece Normally = 2
     '''
 
-    def get_possible_actions(self,dice_number=0,turn = 3):
+    def get_possible_actions(self, dice_number=0, turn=3):
         if turn == 0:
             return []
 
@@ -81,18 +73,18 @@ class state:
             if player.color == self.playerTurn:
                 current_player = player
 
-        for number in range(1,7):
+        for number in range(1, 7):
             if dice_number == number or dice_number == 0:
                 for piece in current_player.pieces:
-                    if self.can_move(current_player,piece,number):
+                    if self.can_move(current_player, piece, number):
                         if number != 6:
-                            possible_actions.append((piece,number))
+                            possible_actions.append((piece, number))
                         else:
-                            action = (piece,6)
+                            action = (piece, 6)
                             copyState = self.copy()
-                            copyState.apply_single_move(piece,6)
+                            copyState.apply_single_move(piece, 6)
                             # copyState.print()
-                            new_actions = copyState.get_possible_actions(turn= turn-1)
+                            new_actions = copyState.get_possible_actions(turn=turn - 1)
                             # print(new_actions)
                             if new_actions == []:
                                 possible_actions.append([action])
@@ -103,9 +95,8 @@ class state:
                                         actions += new_action
                                         possible_actions.append(actions)
                                     else:
-                                        possible_actions.append([action,new_action])
+                                        possible_actions.append([action, new_action])
 
-                
         return possible_actions
 
         # possible_actions = []
@@ -198,10 +189,10 @@ class state:
 
         # return possible_actions
 
-    def generate_next_states(self, dice_number=0):
+    def generate_next_states(self, dice_number=0, turn=3):
         next_states = set()
 
-        for action in self.get_possible_actions(dice_number):
+        for action in self.get_possible_actions(dice_number, turn):
             state_copy = self.copy()
             if type(action) != list:
                 action = [action]
@@ -237,8 +228,8 @@ class state:
 
         currentPlayer = None
         currentPiece = None
-        total_cost=0
-        removed=False
+        total_cost = 0
+        removed = False
         for player in self.players:
             if player.color == piece.color:
                 for p in player.pieces:
@@ -262,38 +253,37 @@ class state:
         if currentPiece.index == 0:
             # print('new')
             # return self, False, 8
-            total_cost+=8
+            total_cost += 8
 
         # if the piece is in safe place
         if self.is_safe_place(currentPiece):
             # print('safe')
             # return self, False, 4
-            total_cost+=4
+            total_cost += 4
 
         # if it reach to the end, Change the endpoint for this player
         if newIndex == currentPlayer.endPoint:
             currentPlayer.change_endpoint()
             # print('endpoint')
-            total_cost+=15
+            total_cost += 15
 
         # there are opponents here, remove them
         if result_remove_opponent[0]:
             cost_of_remove_opponent = 5 + (2 * result_remove_opponent[1])
             # print(f'opponents {cost_of_remove_opponent}')
             # return self, True, cost_of_remove_opponent
-            removed=True
-            total_cost+=cost_of_remove_opponent
-        
+            removed = True
+            total_cost += cost_of_remove_opponent
 
         # if the piece build a wall
         if result_is_wall[0]:
             cost_of_wall = 5 - (2 * (result_is_wall[1] - 2))
             # print(f'build a wall {cost_of_wall} , num= {result_is_wall[1]}')
             # return self, False, cost_of_wall
-            total_cost+=cost_of_wall
+            total_cost += cost_of_wall
 
-        if total_cost==0:
-            total_cost=2
+        if total_cost == 0:
+            total_cost = 2
 
         # print('default')
         return self, removed, total_cost
