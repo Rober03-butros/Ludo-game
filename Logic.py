@@ -25,7 +25,7 @@ class logic:
 
         # print('Start game')
         # print()
-        self.print_state()
+        self.state.print()
         turn = 2
         while (True):
 
@@ -56,7 +56,7 @@ class logic:
             else:
                 turn = 2
 
-            self.print_state()
+            self.state.print()
 
         '''
         while game not finished 
@@ -83,7 +83,7 @@ class logic:
         removed = False
         best_move = [0, 0]
         best_cost = -1
-        result = self.Expectiminimax(self.state, 3, 'min', 'chance', dice_number, turn)
+        result = self.Expectiminimax(self.state, 4, 'min', 'chance', dice_number, turn)
         best_cost = result[0]
         best_move = result[1]
 
@@ -102,13 +102,6 @@ class logic:
 
     def throw_the_dice(self):
         return random.randint(1, 6)
-
-    def print_state(self):
-        for player in self.state.players:
-            print(f"player color {player.color}:")
-            for piece in player.pieces:
-                print(f'number :{piece.number}                 index:{piece.index}     real{player.get_index(piece)}')
-        print()
 
     def Expectiminimax(self, state, depth, lastNode, node, dice_number=0, turn=3):
         if depth == 0 or state.is_final():
@@ -148,10 +141,10 @@ class logic:
             best_value = float('-inf')
             best_move = None
             if lastNode == 'min':
-                # state.playerTurn = 'G'
+                state.playerTurn = 'G'
                 nextNode = 'max'
             else:
-                # state.playerTurn = 'R'
+                state.playerTurn = 'R'
                 nextNode = 'min'
 
             # print('dice number here : ' + str(dice_number))
