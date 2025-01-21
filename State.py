@@ -24,17 +24,24 @@ class state:
     # safe place is in index  8+i*13  where i is [0,1,2,3]
     safe = [8, 21, 34, 47]
 
-    def __init__(self, players, playerTurn, parent=None, action=None, cost=0, depth=0):
+    def __init__(self, players, playerTurn, turns_order, current_player_index=0, parent=None, action=None, cost=0,
+                 depth=0):
 
         # player is a list of objects (player).
         self.players = players
         self.playerTurn = playerTurn
         self.parent = parent
-        # action is a number on dice and the piece we want to move it
         self.action = action
         self.depth = depth
         self.cost = cost
+        self.turns_order = turns_order
+        self.current_player_index = current_player_index
+
         self.grid = [' _ ' for i in range(52)]
+
+    def next_player(self):
+        self.playerTurn = self.turns_order[self.current_player_index]
+        self.current_player_index = (self.current_player_index + 1) % len(self.turns_order)
 
     def __hash__(self):
         players_hashes = tuple(hash(player) for player in self.players)
@@ -68,6 +75,7 @@ class state:
             return []
 
         possible_actions = []
+        current_player = None
 
         for player in self.players:
             if player.color == self.playerTurn:
@@ -97,7 +105,6 @@ class state:
 
         return possible_actions
 
-
     def generate_next_states(self, dice_number=0, turn=3):
         next_states = set()
 
@@ -108,6 +115,7 @@ class state:
             new_state, action_cost = state_copy.apply_move(action)
             new_state.cost = action_cost + self.cost
             new_state.action = action
+            new_state.next_player()
             next_states.add(new_state)
         return next_states
 
@@ -146,7 +154,7 @@ class state:
         # if the piece is already in the board, move it
         if currentPiece.index != -1:
             newIndex = currentPiece.index + number
-            
+
         currentPiece.index = newIndex
         result_remove_opponent = self.remove_opponent(currentPiece, currentPlayer)
         result_is_wall = self.is_wall(currentPiece, currentPlayer)
@@ -154,13 +162,13 @@ class state:
         if currentPiece.index == 0:
             total_cost += 80
 
-        if  not self.is_safe_place(currentPiece) and not newIndex == currentPlayer.endPoint and currentPiece.index != 0:
+        if not self.is_safe_place(currentPiece) and not newIndex == currentPlayer.endPoint and currentPiece.index != 0:
             if number > 1:
-                result_skip = self.skip_opponent(currentPlayer,currentPiece,number)
+                result_skip = self.skip_opponent(currentPlayer, currentPiece, number)
                 if result_skip[0]:
-                    total_cost -= 5*result_skip[1] 
+                    total_cost -= 5 * result_skip[1]
 
-        # if the piece is in safe place
+                    # if the piece is in safe place
         if self.is_safe_place(currentPiece):
             # print('safe')
             # return self, False, 4
@@ -178,15 +186,14 @@ class state:
             # print(f'opponents {cost_of_remove_opponent}')
             # return self, True, cost_of_remove_opponent
             removed = True
-            total_cost += cost_of_remove_opponent*10
+            total_cost += cost_of_remove_opponent * 10
 
         # if the piece build a wall
         if result_is_wall[0]:
             cost_of_wall = 5 - (2 * (result_is_wall[1] - 2))
             # print(f'build a wall {cost_of_wall} , num= {result_is_wall[1]}')
             # return self, False, cost_of_wall
-            total_cost += cost_of_wall*10
-
+            total_cost += cost_of_wall * 10
 
         if total_cost <= 0:
             total_cost += 20
@@ -227,9 +234,10 @@ class state:
         for player in self.players:
             print(f"player color {player.color}:")
             for piece in player.pieces:
-                print(f'number :{piece.number}                 index:{piece.index}     real{player.get_index(piece)}',end='')
+                print(f'number :{piece.number}                 index:{piece.index}     real{player.get_index(piece)}',
+                      end='')
                 if player.get_index(piece) in self.safe:
-                    print('  ---> S',end='')
+                    print('  ---> S', end='')
                 print()
         print()
         print("---------------------------------------------------------------------------------")
@@ -257,7 +265,7 @@ class state:
         for piece1 in player.pieces:
             if piece1.index == piece.index and piece1.number != piece.number:
                 count += 1
-                
+
         if count == 1:
             return False, 0
         return True, count
@@ -282,20 +290,22 @@ class state:
         return removed, removed_count
         # return removed_count
 
-    def skip_opponent(self,player,piece,number):
+    def skip_opponent(self, player, piece, number):
         oldIndex = piece.index - number
         skipped_count = set()
-        skipped = False 
+        skipped = False
 
         for opponent in self.players:
             if player == opponent:
                 continue
             for opponent_piece in opponent.pieces:
-                if player.get_index(piece) > opponent.get_index(opponent_piece) and (oldIndex + player.shift) % 52  <= opponent.get_index(opponent_piece):
+                if player.get_index(piece) > opponent.get_index(opponent_piece) and (
+                        oldIndex + player.shift) % 52 <= opponent.get_index(opponent_piece):
                     skipped_count.add(opponent.get_index(opponent_piece))
                     skipped = True
         return skipped, len(skipped_count)
 
     def copy(self):
-        return state([player.copy() for player in self.players], self.playerTurn, self.parent, self.action, self.cost,
+        return state([player.copy() for player in self.players], self.playerTurn, self.turns_order,
+                     self.current_player_index, self.parent, self.action, self.cost,
                      self.depth)

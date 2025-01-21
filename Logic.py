@@ -3,14 +3,8 @@ import random
 
 class logic:
 
-    def __init__(self, state, turns_order, current_player_index=0):
+    def __init__(self, state):
         self.state = state
-        self.turns_order = turns_order
-        self.current_player_index = current_player_index
-
-    def next_player(self):
-        self.state.playerTurn = self.turns_order[self.current_player_index]
-        self.current_player_index = (self.current_player_index + 1) % len(self.turns_order)
 
     def start_game(self):
         # # DON'T TOUCH
@@ -32,7 +26,7 @@ class logic:
             if self.state.is_final():
                 break
 
-            self.next_player()
+            self.state.next_player()
 
             current_player = None
 
@@ -40,18 +34,18 @@ class logic:
                 if player.color == self.state.playerTurn:
                     current_player = player
 
-            # input('inter anythings to throw the dice')
+            input('inter anythings to throw the dice')
             dice_number = self.throw_the_dice()
             print(f'dice number is: {dice_number}')
 
-            print('current player color is : ' + str(current_player.color))
+            print('current player color is : ' + str(self.state.playerTurn))
             if current_player.ishuman:
                 removed = self.human_play(current_player, dice_number)
             else:
-                removed = self.computer_play(dice_number, turn)
+                removed = self.computer_play(dice_number, turn + 1)
 
             if (dice_number == 6 or removed) and turn:
-                self.current_player_index -= 1
+                self.state.current_player_index -= 1
                 turn -= 1
             else:
                 turn = 2
@@ -89,10 +83,10 @@ class logic:
 
         # print('best move : ' + str(best_move))
         if best_move:
-            print('computer move')
-            print(F"best cost:{best_cost}")
-            print(f"piece number:{best_move[0][0].number}     dice number:{best_move[0][1]}")
-            print()
+            # print('computer move')
+            # print(F"best cost:{best_cost}")
+            # print(f"piece number:{best_move[0][0].number}     dice number:{best_move[0][1]}")
+            # print()
             returned = self.state.apply_single_move(best_move[0][0], best_move[0][1])
             removed = returned[1]
         else:
@@ -141,19 +135,12 @@ class logic:
             best_value = float('-inf')
             best_move = None
             if lastNode == 'min':
-                state.playerTurn = 'G'
                 nextNode = 'max'
             else:
-                state.playerTurn = 'R'
                 nextNode = 'min'
 
-            # print('dice number here : ' + str(dice_number))
             states = state.generate_next_states(dice_number, turn)
-            # print('states count : ' + str(len(states)))
-            # if not states:
-            #     raise Exception('no satasetftsef')
             for newState in states:
-                # value += self.Expectiminimax(newState,depth-1,node,nextNode)*self.calculate_probability(action[1])
                 result = self.Expectiminimax(newState, depth - 1, node, nextNode)
                 value += result[0] * (1 / 6)
                 if result[0] > best_value:

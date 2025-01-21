@@ -18,7 +18,7 @@ p1.pieces[0].index = 8
 
 
 players = [p1, p2]
-s = state(players, 'R')
 order = [p1.color, p2.color]
-l = logic(s, order)
+s = state(players, 'R', order)
+l = logic(s)
 l.start_game()
