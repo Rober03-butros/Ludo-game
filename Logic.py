@@ -72,16 +72,23 @@ class logic:
             '''
 
     def human_play(self, current_player, dice_number):
-        pieceNum = int(input('enter number the piece'))
-        piece = current_player.pieces[pieceNum]
         removed = False
+        possible_actions = self.state.get_possible_actions(dice_number)
 
-        if not self.state.can_move(current_player, piece, dice_number):
-            print('GGs')
-        else:
-            returned = self.state.apply_single_move(piece, dice_number)
-            removed = returned[1]
-            print('The movement was completed successfully')
+        while(True):
+            if len(possible_actions) > 0:
+                pieceNum = int(input('enter number the piece'))
+                piece = current_player.pieces[pieceNum]
+                if not self.state.can_move(current_player, piece, dice_number):
+                    print('this move not possible , you have another one.')
+                else:
+                    returned = self.state.apply_single_move(piece, dice_number)
+                    removed = returned[1]
+                    print('The movement was completed successfully')
+                    break
+            else:
+                print('You don\'t have any possible moves.')
+                break
 
         return removed
 
