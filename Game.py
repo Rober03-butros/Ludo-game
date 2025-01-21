@@ -2,20 +2,20 @@ from Logic import logic
 from State import state
 from Player import player
 
-p1 = player('R', isHuman=True)
+p1 = player('R', isHuman=False)
 p2 = player('G', isHuman=False)
 p3 = player('Y', isHuman=False)
 p4 = player('B', isHuman=False)
 
 p2.pieces[0].index = 0
-# p2.pieces[1].index=1
-# p2.pieces[3].index=2
-# p2.pieces[2].index=3
+p2.pieces[1].index=1
+p2.pieces[3].index=2
+p2.pieces[2].index=2
 
-# p1.pieces[3].index=0
-# p1.pieces[1].index=1
-p1.pieces[0].index = 8
-# p1.pieces[2].index=3
+p1.pieces[3].index=35
+p1.pieces[1].index=34
+p1.pieces[0].index =38
+p1.pieces[2].index=42
 
 
 players = [p1, p2, p3, p4]

@@ -97,7 +97,7 @@ class logic:
         removed = False
         best_move = [0, 0]
         best_cost = -1
-        result = self.Expectiminimax(self.state, 5, self.state.playerTurn, 'chance', dice_number, turn)
+        result = self.Expectiminimax(self.state, 4, self.state.playerTurn,self.state.playerTurn, 'chance', dice_number, turn)
         best_cost = result[0]
         best_move = result[1]
 
@@ -122,7 +122,7 @@ class logic:
     def throw_the_dice(self):
         return random.randint(1, 6)
 
-    def Expectiminimax(self, state, depth, lastNode, node, dice_number=0, turn=3):
+    def Expectiminimax(self, state, depth,initial_player_color, current_player_color, node, dice_number=0, turn=3):
         if depth == 0 or state.is_final():
             return state.cost, state.action, 1
 
@@ -133,7 +133,7 @@ class logic:
             newState = state.copy()
             nodes_count = 0
             for number in range(1, 7):
-                result = self.Expectiminimax(newState, depth, newState.playerTurn, 'chance', number, turn)
+                result = self.Expectiminimax(newState, depth -1 ,initial_player_color, newState.playerTurn, 'chance', number, turn)
                 value = result[0]
                 move = result[1]
                 nodes_count += result[2]
@@ -150,7 +150,7 @@ class logic:
             nodes_count = 0
 
             for number in range(1, 7):
-                result = self.Expectiminimax(newState, depth, newState.playerTurn, 'chance', number, turn)
+                result = self.Expectiminimax(newState, depth-1,initial_player_color, newState.playerTurn, 'chance', number, turn)
                 value = result[0]
                 move = result[1]
                 nodes_count += result[2]
@@ -167,10 +167,10 @@ class logic:
             nodes_count = 0
 
             states = state.generate_next_states(dice_number, turn)
-            next_player = self.next_player(lastNode)
+            next_player = self.next_player(current_player_color,initial_player_color)
             # print('next player is a : ' + str(next_player))
             for newState in states:
-                result = self.Expectiminimax(newState, depth - 1, 'chance', next_player)
+                result = self.Expectiminimax(newState, depth - 1, initial_player_color,'chance', next_player)
                 value += result[0] * (1 / 6) ** len(newState.action)
                 nodes_count += result[2]
                 if result[0] * (1 / 6) ** len(newState.action) > best_value:
@@ -178,14 +178,14 @@ class logic:
                     best_move = newState.action
             return value, best_move, nodes_count + 1
 
-    def next_player(self, current_player_color):
-        index = -1
-        for i in range(4):
-            if self.state.turns_order[i] == current_player_color:
-                index = i
-                break
+    def next_player(self, current_player_color,initial_player_color):
+        # index = -1
+        # for i in range(4):
+        #     if self.state.turns_order[i] == current_player_color:
+        #         index = i
+        #         break
 
-        if self.state.turns_order[(index + 1) % len(self.state.turns_order)] == current_player_color:
+        if current_player_color == initial_player_color:
             return 'max'
         else:
             return 'min'
