@@ -306,6 +306,5 @@ class state:
         return skipped, len(skipped_count)
 
     def copy(self):
-        return state([player.copy() for player in self.players], self.playerTurn, self.turns_order,
-                     self.current_player_index, self.parent, self.action, self.cost,
+        return state([player.copy() for player in self.players], self.playerTurn,self.turns_order,self.current_player_index, self.parent, self.action, self.cost,
                      self.depth)

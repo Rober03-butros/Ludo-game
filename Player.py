@@ -1,5 +1,4 @@
 from Piece import piece
-import copy
 
 
 # sorting pieces by index

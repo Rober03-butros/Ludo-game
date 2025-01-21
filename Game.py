@@ -1,7 +1,6 @@
 from Logic import logic
 from State import state
 from Player import player
-import random
 
 p1 = player('R', isHuman=True)
 p2 = player('G', isHuman=False)
