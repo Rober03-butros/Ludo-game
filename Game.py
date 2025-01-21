@@ -13,7 +13,7 @@ p2.pieces[0].index = 0
 
 # p1.pieces[3].index=0
 # p1.pieces[1].index=1
-p1.pieces[0].index = 2
+p1.pieces[0].index = 8
 # p1.pieces[2].index=3
 
 

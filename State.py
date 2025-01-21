@@ -227,7 +227,10 @@ class state:
         for player in self.players:
             print(f"player color {player.color}:")
             for piece in player.pieces:
-                print(f'number :{piece.number}                 index:{piece.index}     real{player.get_index(piece)}')
+                print(f'number :{piece.number}                 index:{piece.index}     real{player.get_index(piece)}',end='')
+                if player.get_index(piece) in self.safe:
+                    print('  ---> S',end='')
+                print()
         print()
         print("---------------------------------------------------------------------------------")
 
