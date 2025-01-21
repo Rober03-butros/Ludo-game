@@ -50,6 +50,7 @@ class logic:
                 input('inter anythings to throw the dice')
                 dice_number = self.throw_the_dice()
                 print(f'dice number is: {dice_number}')
+                print('Current player color is : ' + str(self.state.playerTurn))
 
                 if current_player.ishuman:
                     removed = self.human_play(current_player, dice_number)
