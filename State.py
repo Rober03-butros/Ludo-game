@@ -24,25 +24,24 @@ class state:
     # safe place is in index  8+i*13  where i is [0,1,2,3]
     safe = [8, 21, 34, 47]
 
-    current_player_index = 0
-
-    def next_player(self):
-        global current_player_index
-        self.playerTurn = self.players[current_player_index]
-        current_player_index = (current_player_index + 1) % len(self.players)
-        # return current_player
-
-    def __init__(self, players, playerTurn, parent=None, action=None, cost=0, depth=0):
+    def __init__(self, players, playerTurn, turns_order, current_player_index=0, parent=None, action=None, cost=0,
+                 depth=0):
 
         # player is a list of objects (player).
         self.players = players
         self.playerTurn = playerTurn
         self.parent = parent
-        # action is a number on dice and the piece we want to move it
         self.action = action
         self.depth = depth
         self.cost = cost
+        self.turns_order = turns_order
+        self.current_player_index = current_player_index
+
         self.grid = [' _ ' for i in range(52)]
+
+    def next_player(self):
+        self.playerTurn = self.turns_order[self.current_player_index]
+        self.current_player_index = (self.current_player_index + 1) % len(self.turns_order)
 
     def __hash__(self):
         players_hashes = tuple(hash(player) for player in self.players)
@@ -71,29 +70,28 @@ class state:
         move a piece Normally = 2
     '''
 
-    def get_possible_actions(self,dice_number=0,turn = 3):
+    def get_possible_actions(self, dice_number=0, turn=3):
         if turn == 0:
             return []
 
         possible_actions = []
+        current_player = None
 
         for player in self.players:
             if player.color == self.playerTurn:
                 current_player = player
 
-        for number in range(1,7):
+        for number in range(1, 7):
             if dice_number == number or dice_number == 0:
                 for piece in current_player.pieces:
-                    if self.can_move(current_player,piece,number):
+                    if self.can_move(current_player, piece, number):
                         if number != 6:
-                            possible_actions.append((piece,number))
+                            possible_actions.append((piece, number))
                         else:
-                            action = (piece,6)
+                            action = (piece, 6)
                             copyState = self.copy()
-                            copyState.apply_single_move(piece,6)
-                            # copyState.print()
-                            new_actions = copyState.get_possible_actions(turn= turn-1)
-                            # print(new_actions)
+                            copyState.apply_single_move(piece, 6)
+                            new_actions = copyState.get_possible_actions(turn=turn - 1)
                             if new_actions == []:
                                 possible_actions.append([action])
                             else:
@@ -103,119 +101,25 @@ class state:
                                         actions += new_action
                                         possible_actions.append(actions)
                                     else:
-                                        possible_actions.append([action,new_action])
+                                        possible_actions.append([action, new_action])
 
-                
         return possible_actions
 
-        # possible_actions = []
-
-        # # playerTurn is containing the color of the current player
-        # player = next(
-        #     (player for player in self.players if player.color == self.playerTurn), None)
-
-        # # if playerTurn changed to containing the player object
-        # # player = self.playerTurn
-
-        # for piece in player.pieces:
-        #     for number in range(1, 7):
-        #         if dice_number == number or dice_number == 0:
-
-        #             if not self.can_move(player, piece, number):
-        #                 continue
-
-        #             action = [(piece, number)]
-
-        #             state_copy = self.copy()
-
-        #             matching_player = next(
-        #                 (player for player in state_copy.players if player.color == piece.color), None)
-
-        #             matching_piece = next(
-        #                 (p for p in matching_player.pieces if p.number == piece.number), None)
-
-        #             returned = state_copy.apply_single_move(matching_piece, number)
-        #             new_state = returned[0]
-        #             removed = returned[1]
-
-        #             if not number == 6 and not removed:
-        #                 possible_actions.append(action)
-        #             else:
-        #                 for piece1 in matching_player.pieces:
-        #                     for number1 in range(1, 7):
-
-        #                         action = [(piece, number)]
-
-        #                         player1 = matching_player
-        #                         # for p in new_state.players:
-        #                         #     if p.color == player.color:
-        #                         #         player1 = p
-        #                         #         break
-
-        #                         if not new_state.can_move(player1, piece1, number1):
-        #                             continue
-
-        #                         matching_piece = next(
-        #                             (p for p in player.pieces if p.number == piece1.number), None)
-
-        #                         action.append((matching_piece, number1))
-
-        #                         state_copy1 = new_state.copy()
-
-        #                         matching_player1 = next(
-        #                             (player for player in state_copy1.players if player.color == piece1.color),
-        #                             None)
-
-        #                         matching_piece1 = next(
-        #                             (p for p in matching_player1.pieces if p.number == piece1.number), None)
-
-        #                         returned = state_copy1.apply_single_move(matching_piece1, number1)
-        #                         new_state1 = returned[0]
-        #                         removed1 = returned[1]
-
-        #                         if not number1 == 6 and not removed1:
-        #                             possible_actions.append(action)
-        #                         else:
-        #                             for piece2 in matching_player1.pieces:
-        #                                 for number2 in range(1, 7):
-
-        #                                     action = [(piece, number), (matching_piece, number1)]
-
-        #                                     player2 = matching_player1
-        #                                     # for p in new_state1.players:
-        #                                     #     if p.color == player.color:
-        #                                     #         player2 = p
-        #                                     #         break
-
-        #                                     if not new_state1.can_move(player2, piece2, number2):
-        #                                         continue
-
-        #                                     matching_piece1 = next(
-        #                                         (p for p in player.pieces if p.number == piece2.number), None)
-
-        #                                     action.append((matching_piece1, number2))
-        #                                     possible_actions.append(action)
-
-        # return possible_actions
-
-    def generate_next_states(self, dice_number=0):
+    def generate_next_states(self, dice_number=0, turn=3):
         next_states = set()
 
-        for action in self.get_possible_actions(dice_number):
+        for action in self.get_possible_actions(dice_number, turn):
             state_copy = self.copy()
             if type(action) != list:
                 action = [action]
             new_state, action_cost = state_copy.apply_move(action)
-            new_state.cost = action_cost
+            new_state.cost = action_cost + self.cost
             new_state.action = action
+            new_state.next_player()
             next_states.add(new_state)
         return next_states
 
     def apply_move(self, action):
-
-        # if not action in self.get_possible_actions():
-        #     print('action : ' + str(action))
-        #     raise Exception("Akalnahaaaa!!!")
 
         current_state = self
         total_cost = 0
@@ -227,18 +131,14 @@ class state:
             total_cost += returned[2]
             current_state = new_state
 
-        # print(f'the cost = {total_cost}')
-        if total_cost == 0:
-            raise Exception('Total cost is ZERO !!!!!!!!!!!!!!')
-
         return current_state, total_cost
 
     def apply_single_move(self, piece, number):
 
         currentPlayer = None
         currentPiece = None
-        total_cost=0
-        removed=False
+        total_cost = 0
+        removed = False
         for player in self.players:
             if player.color == piece.color:
                 for p in player.pieces:
@@ -260,40 +160,43 @@ class state:
         result_is_wall = self.is_wall(currentPiece, currentPlayer)
 
         if currentPiece.index == 0:
-            # print('new')
-            # return self, False, 8
-            total_cost+=8
+            total_cost += 80
 
-        # if the piece is in safe place
+        if not self.is_safe_place(currentPiece) and not newIndex == currentPlayer.endPoint and currentPiece.index != 0:
+            if number > 1:
+                result_skip = self.skip_opponent(currentPlayer, currentPiece, number)
+                if result_skip[0]:
+                    total_cost -= 5 * result_skip[1]
+
+                    # if the piece is in safe place
         if self.is_safe_place(currentPiece):
             # print('safe')
             # return self, False, 4
-            total_cost+=4
+            total_cost += 40
 
         # if it reach to the end, Change the endpoint for this player
         if newIndex == currentPlayer.endPoint:
             currentPlayer.change_endpoint()
             # print('endpoint')
-            total_cost+=15
+            total_cost += 150
 
         # there are opponents here, remove them
         if result_remove_opponent[0]:
             cost_of_remove_opponent = 5 + (2 * result_remove_opponent[1])
             # print(f'opponents {cost_of_remove_opponent}')
             # return self, True, cost_of_remove_opponent
-            removed=True
-            total_cost+=cost_of_remove_opponent
-        
+            removed = True
+            total_cost += cost_of_remove_opponent * 10
 
         # if the piece build a wall
         if result_is_wall[0]:
             cost_of_wall = 5 - (2 * (result_is_wall[1] - 2))
             # print(f'build a wall {cost_of_wall} , num= {result_is_wall[1]}')
             # return self, False, cost_of_wall
-            total_cost+=cost_of_wall
+            total_cost += cost_of_wall * 10
 
-        if total_cost==0:
-            total_cost=2
+        if total_cost <= 0:
+            total_cost += 20
 
         # print('default')
         return self, removed, total_cost
@@ -326,27 +229,18 @@ class state:
         return player.endPoint <= 51
 
     def print(self):
+        print("---------------------------------[safe place]------------------------------------")
+        print("------------------------------[8 - 21 - 34 - 47]---------------------------------")
         for player in self.players:
             print(f"player color {player.color}:")
             for piece in player.pieces:
-                print(f'number :{piece.number}                 index:{piece.index}     real{player.get_index(piece)}')
+                print(f'number :{piece.number}                 index:{piece.index}     real{player.get_index(piece)}',
+                      end='')
+                if player.get_index(piece) in self.safe:
+                    print('  ---> S', end='')
+                print()
         print()
-
-    # for i in range(5):
-    #     for j in range(4):
-    #         print(f"                                  {str(self.end[j][i])}    ",end='')
-    #     print()
-
-    # grid = [' _ ' for i in range(52)]
-
-    # for player in self.players:
-    #     for piece in player.pieces:
-    #         if piece.index >= 0 and piece.index < player.endPoint:
-    #             grid[(piece.index-player.shift)%52] = ' '+piece.color+str(piece.number)
-
-    # for i in range(52):
-    #     print(grid[i],end='')
-    # print()
+        print("---------------------------------------------------------------------------------")
 
     def there_are_wall(self, index, color):
         # count number of pieces that not same as my color in this index
@@ -371,7 +265,7 @@ class state:
         for piece1 in player.pieces:
             if piece1.index == piece.index and piece1.number != piece.number:
                 count += 1
-                # print(f'the index :{piece1.index} piece1 number:{piece1.number} , piece number:{piece.number}')
+
         if count == 1:
             return False, 0
         return True, count
@@ -396,6 +290,21 @@ class state:
         return removed, removed_count
         # return removed_count
 
+    def skip_opponent(self, player, piece, number):
+        oldIndex = piece.index - number
+        skipped_count = set()
+        skipped = False
+
+        for opponent in self.players:
+            if player == opponent:
+                continue
+            for opponent_piece in opponent.pieces:
+                if player.get_index(piece) > opponent.get_index(opponent_piece) and (
+                        oldIndex + player.shift) % 52 <= opponent.get_index(opponent_piece):
+                    skipped_count.add(opponent.get_index(opponent_piece))
+                    skipped = True
+        return skipped, len(skipped_count)
+
     def copy(self):
-        return state([player.copy() for player in self.players], self.playerTurn, self.parent, self.action, self.cost,
+        return state([player.copy() for player in self.players], self.playerTurn,self.turns_order,self.current_player_index, self.parent, self.action, self.cost,
                      self.depth)
