@@ -212,7 +212,7 @@ class state:
             return piece.index + number == player.endPoint
 
         # check if there is a wall
-        for step in range(number):
+        for step in range(1,number-1):
             if self.there_are_wall((player.get_index(piece) + step) % 52, piece.color):
                 return False
 
@@ -283,7 +283,7 @@ class state:
             if player == opponent:
                 continue
             for opponent_piece in opponent.pieces:
-                if player.get_index(piece) == opponent.get_index(opponent_piece):
+                if player.get_index(piece) == opponent.get_index(opponent_piece) and opponent_piece.index < opponent.endPoint:
                     removed_count += 1
                     opponent_piece.index = -1
                     removed = True
