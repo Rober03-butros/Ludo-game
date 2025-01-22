@@ -18,18 +18,6 @@ class logic:
             return self.question_to_show_information()
 
     def start_game(self):
-        # # DON'T TOUCH
-        # print('_____________________________________________________')
-        # actions = state.get_possible_actions()
-        # print('POSSIBLE ACTIONS : ' + str(len(actions)))
-        # for action in actions:
-        #     for move in action:
-        #         print('piece color : ' + str(move[0].color) + '  |  piece index : ' + str(move[0].index) + '  |  piece number : ' + str(move[0].number) + '  |  number : ' +  str(move[1]))
-        #     print('BOOOOOOOOOOORDEEEEEEEEEEEEEEEEER')
-        # print('_____________________________________________________')
-
-        # print('Start game')
-        # print()
         self.show_information = self.question_to_show_information()
         if self.show_information == True or self.show_information == False:
             self.state.print()
@@ -127,7 +115,6 @@ class logic:
             return state.cost, state.action, 1
 
         if node == 'max':
-            # print(node)
             best_value = float('-inf')
             best_move = None
             newState = state.copy()
@@ -168,7 +155,6 @@ class logic:
 
             states = state.generate_next_states(dice_number, turn)
             next_player = self.next_player(turn_iteration)
-            # print('next player is a : ' + str(next_player))
             for newState in states:
                 result = self.Expectiminimax(newState, depth - 1, turn_iteration+1,next_player)
                 value += result[0] * (1 / 6) ** len(newState.action)
