@@ -1,7 +1,7 @@
 from Piece import piece
 
 
-# sorting pieces by index
+# sorting pieces by piece number
 def sort_pieces(pieces):
     pieces.sort(key=lambda piece: piece.number)
 

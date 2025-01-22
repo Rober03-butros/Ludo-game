@@ -170,35 +170,27 @@ class state:
 
                     # if the piece is in safe place
         if self.is_safe_place(currentPiece):
-            # print('safe')
-            # return self, False, 4
             total_cost += 40
 
         # if it reach to the end, Change the endpoint for this player
         if newIndex == currentPlayer.endPoint:
             currentPlayer.change_endpoint()
-            # print('endpoint')
             total_cost += 150
 
         # there are opponents here, remove them
         if result_remove_opponent[0]:
             cost_of_remove_opponent = 5 + (2 * result_remove_opponent[1])
-            # print(f'opponents {cost_of_remove_opponent}')
-            # return self, True, cost_of_remove_opponent
             removed = True
             total_cost += cost_of_remove_opponent * 10
 
         # if the piece build a wall
         if result_is_wall[0]:
             cost_of_wall = 5 - (2 * (result_is_wall[1] - 2))
-            # print(f'build a wall {cost_of_wall} , num= {result_is_wall[1]}')
-            # return self, False, cost_of_wall
             total_cost += cost_of_wall * 10
 
         if total_cost <= 0:
             total_cost += 20
 
-        # print('default')
         return self, removed, total_cost
 
     def can_move(self, player, piece, number):
@@ -279,7 +271,6 @@ class state:
         removed = False  # indicates if we have removed opponent pieces or not
         if player.get_index(piece) in self.safe:
             return removed, removed_count
-            # return removed_count
 
         for opponent in self.players:
             if player == opponent:
@@ -290,7 +281,6 @@ class state:
                     opponent_piece.index = -1
                     removed = True
         return removed, removed_count
-        # return removed_count
 
     def skip_opponent(self, player, piece, number):
         oldIndex = piece.index - number

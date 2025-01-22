@@ -18,18 +18,6 @@ class logic:
             return self.question_to_show_information()
 
     def start_game(self):
-        # # DON'T TOUCH
-        # print('_____________________________________________________')
-        # actions = state.get_possible_actions()
-        # print('POSSIBLE ACTIONS : ' + str(len(actions)))
-        # for action in actions:
-        #     for move in action:
-        #         print('piece color : ' + str(move[0].color) + '  |  piece index : ' + str(move[0].index) + '  |  piece number : ' + str(move[0].number) + '  |  number : ' +  str(move[1]))
-        #     print('BOOOOOOOOOOORDEEEEEEEEEEEEEEEEER')
-        # print('_____________________________________________________')
-
-        # print('Start game')
-        # print()
         self.show_information = self.question_to_show_information()
         if self.show_information == True or self.show_information == False:
             self.state.print()
@@ -75,7 +63,7 @@ class logic:
         removed = False
         possible_actions = self.state.get_possible_actions(dice_number)
 
-        while(True):
+        while (True):
             if len(possible_actions) > 0:
                 pieceNum = int(input('enter number the piece'))
                 piece = current_player.pieces[pieceNum]
@@ -97,21 +85,16 @@ class logic:
         removed = False
         best_move = [0, 0]
         best_cost = -1
-        result = self.Expectiminimax(self.state, 4, 'min', 'chance', dice_number, turn)
+        result = self.Expectiminimax(self.state, 4, 0, 'chance', dice_number, turn)
         best_cost = result[0]
         best_move = result[1]
 
-        # print('best move : ' + str(best_move))
         if best_move:
             if self.show_information:
                 print(f'The number of visited nodes: {result[2]}')
                 print(F"Best cost for computer player(Max player) :{best_cost}")
                 print(f"Best action : piece number:{best_move[0][0].number}     dice number:{best_move[0][1]}")
 
-            # print('computer move')
-            # print(F"best cost:{best_cost}")
-            # print(f"piece number:{best_move[0][0].number}     dice number:{best_move[0][1]}")
-            # print()
             returned = self.state.apply_single_move(best_move[0][0], best_move[0][1])
             removed = returned[1]
         else:
@@ -127,18 +110,17 @@ class logic:
     def throw_the_dice(self):
         return random.randint(1, 6)
 
-    def Expectiminimax(self, state, depth, lastNode, node, dice_number=0, turn=3):
+    def Expectiminimax(self, state, depth,turn_iteration, node, dice_number=0, turn=3):
         if depth == 0 or state.is_final():
             return state.cost, state.action, 1
 
         if node == 'max':
-            # print(node)
             best_value = float('-inf')
             best_move = None
             newState = state.copy()
             nodes_count = 0
             for number in range(1, 7):
-                result = self.Expectiminimax(newState, depth - 1, node, 'chance', number, turn)
+                result = self.Expectiminimax(newState, depth -1 ,turn_iteration, 'chance', number, turn)
                 value = result[0]
                 move = result[1]
                 nodes_count += result[2]
@@ -155,7 +137,7 @@ class logic:
             nodes_count = 0
 
             for number in range(1, 7):
-                result = self.Expectiminimax(newState, depth - 1, node, 'chance', number, turn)
+                result = self.Expectiminimax(newState, depth-1,turn_iteration, 'chance', number, turn)
                 value = result[0]
                 move = result[1]
                 nodes_count += result[2]
@@ -170,17 +152,20 @@ class logic:
             best_value = float('-inf')
             best_move = None
             nodes_count = 0
-            if lastNode == 'min':
-                nextNode = 'max'
-            else:
-                nextNode = 'min'
 
             states = state.generate_next_states(dice_number, turn)
+            next_player = self.next_player(turn_iteration)
             for newState in states:
-                result = self.Expectiminimax(newState, depth - 1, node, nextNode)
+                result = self.Expectiminimax(newState, depth - 1, turn_iteration+1,next_player)
                 value += result[0] * (1 / 6) ** len(newState.action)
                 nodes_count += result[2]
                 if result[0] * (1 / 6) ** len(newState.action) > best_value:
                     best_value = result[0]
                     best_move = newState.action
             return value, best_move, nodes_count + 1
+
+    def next_player(self,turn_iteration):
+        if turn_iteration % len(self.state.turns_order) == 0 :
+            return 'max'
+        else:
+            return 'min'
