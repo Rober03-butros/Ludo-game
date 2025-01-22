@@ -238,6 +238,8 @@ class state:
                       end='')
                 if player.get_index(piece) in self.safe:
                     print('  ---> S', end='')
+                if piece.index >= player.endPoint:
+                    print('  ---> End', end='')    
                 print()
         print()
         print("---------------------------------------------------------------------------------")
